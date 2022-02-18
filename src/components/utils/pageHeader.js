@@ -1,10 +1,8 @@
 import { Button, PageHeader as Header, Tooltip } from "antd";
-import { PlusOutlined, HomeOutlined, SettingFilled, SmileOutlined, LoadingOutlined } from '@ant-design/icons';
 
 import { history } from '../../helpers/history'
 
 function PageHeader({
-    onNewRegister,
     title,
     subtitle,
     buttonsPageHeader,
@@ -13,7 +11,7 @@ function PageHeader({
 
     const extra = [];
 
-    if (onNewRegister) {
+    if (buttonsPageHeader) {
         buttonsPageHeader.map((button) => {
             extra.push(
                 button.icon ? (
@@ -22,25 +20,20 @@ function PageHeader({
                             type="primary"
                             shape="circle"
                             style={{ color: 'black', backgroundColor: '#e26565', border: '2px', marginRight: '2px' }}
-                            icon={button.icon === 'PlusOutlined' ? <PlusOutlined /> : (
-                                button.icon === 'HomeOutlined' ? <HomeOutlined /> : (
-                                    button.icon === 'SettingFilled' ? <SettingFilled /> : (
-                                        button.icon === 'SmileOutlined' ? <SmileOutlined rotate={180} /> : (
-                                            button.icon === 'LoadingOutlined' ? <LoadingOutlined /> : ''
-                                        )
-                                    )
-                                )
-                            )}
-                            size={button.size} />
+                            icon={button.icon}
+                            size={button.size} 
+                            onClick={button.rota ? (() => {history.push(`${button.rota}`)}) : (() => {history.push('/')})}
+                            />
                         <Button
                             type="link"
                             style={{ color: 'black', padding: '5px' }}
+                            onClick={button.rota ? (() => {history.push(`${button.rota}`)}) : (() => {history.push('/')})}
                         >
                             {button.descricao}
                         </Button>
                     </Tooltip>
                 ) : (
-                    <Tooltip title="adicionar">
+                    <Tooltip title={button.tituloToolTip}>
                         <Button
                             type="link"
                             style={{ color: 'black', padding: '5px' }}
@@ -51,19 +44,6 @@ function PageHeader({
                 )
             );
         })
-        //         // *********************
-        //         // Outro estilo de botão
-        //         // *********************
-        //         // <Button
-        //         //     type="primary"
-        //         //     shape="round"
-        //         //     style={{ color: 'black', backgroundColor: '#e26565', border: '2px', marginRight: '2px' }}
-        //         //     icon={
-        //         //     <PlusOutlined
-        //         //     style={{ float: 'left', marginTop: '2px' }}
-        //         //     />}>
-        //         //     Adicionar
-        //         // </Button>
     }
 
     const props = {};

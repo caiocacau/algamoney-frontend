@@ -3,16 +3,19 @@ import React, { useCallback, useEffect, useState } from "react";
 import UserService from "../services/user.service";
 import { toast } from "react-toastify";
 
-import { Button, Table } from 'antd';
+import { Table } from 'antd';
 
+import { PlusOutlined, HomeOutlined, LoadingOutlined } from '@ant-design/icons';
 import eventBus from "../common/EventBus";
 import { getColumnSorterProps, getColumnSearchProps } from "./utils/tableUtils";
 import PageHeader from "./utils/pageHeader";
 
-import { history } from '../helpers/history';
 import BreadCrumb from "./utils/breadCrumb";
+import GroupAcoes from "./utils/acoesTable/groupAcoes";
 
 const PAGE_SIZE = 6;
+
+export const MODULO_ROUTE = 'user';
 
 export default function BoardUser() {
 
@@ -46,35 +49,38 @@ export default function BoardUser() {
     setStateSearch(prev => ({ ...prev, ...newProperties }));
   }, []);
 
-  useEffect(() => {
+  const loadUsers = useCallback(async () => {
+    try {
 
-    (async () => {
-      try {
+      updateStateTable({ loading: true });
 
-        updateStateTable({ loading: true });
+      // console.log(page);
 
-        const response = await UserService.getUserBoard(codigo, nome, email, page - 1, PAGE_SIZE, activeSort);
+      const response = await UserService.getUserBoard(codigo, nome, email, page - 1, PAGE_SIZE, activeSort);
 
-        console.log(response.data)
+      // console.log(response.data)
 
-        updateStateTable({
-          dados: response.data.content,
-          totalElements: response.data.totalElements
-        });
+      updateStateTable({
+        dados: response.data.content,
+        totalElements: response.data.totalElements
+      });
 
-      } catch (err) {
-        toast.error(err.message || 'Erro ao carregar dados!');
+    } catch (err) {
+      toast.error(err.message || 'Erro ao carregar dados!');
 
-        if (err.response && err.response.status === 401) {
-          eventBus.dispatch("logout");
-        }
-      } finally {
-        updateStateTable({ loading: false });
+      if (err.response && err.response.status === 401) {
+        eventBus.dispatch("logout");
       }
-    })();
+    } finally {
+      updateStateTable({ loading: false });
+    }
   }, [page, codigo, nome, email, activeSort, updateStateTable]);
 
-  const columns = [
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  const columns = (onDelete => [
     {
       title: 'Código',
       dataIndex: 'codigo',
@@ -110,7 +116,19 @@ export default function BoardUser() {
       render: (text) =>
         text.map(t => <p key={t.codigo} style={{ marginBottom: '2px' }} >{t.descricao} </p>)
     },
-  ];
+    {
+      title: 'Ações',
+      key: 'action',
+      align: 'center',
+      render: (text, record) => (
+        <GroupAcoes
+          moduloSistema={MODULO_ROUTE}
+          record={record}
+          onDelete={onDelete}
+        />
+      ),
+    },
+  ]);
 
   const routes = [
     {
@@ -125,18 +143,40 @@ export default function BoardUser() {
 
   const buttonsPageHeader = [
     {
+      descricao: 'Não identificado',
+      // tituloToolTip: '',
+      icon: <HomeOutlined />,
+      size: 'large'
+    },
+    {
       descricao: 'Desconhecido',
       // tituloToolTip: '',
-      icon: 'LoadingOutlined', // Colocar também no componente pageHeader.js
+      icon: <LoadingOutlined />,
       size: 'medium'
     },
     {
       descricao: 'Usuário',
       tituloToolTip: 'Adicionar',
-      icon: 'PlusOutlined',
-      size: 'small'
+      icon: <PlusOutlined />,
+      size: 'small',
+      rota: '/user/form'
     }
   ];
+
+  const handleDelete = useCallback(async record => {
+    try {
+
+      updateStateTable({ loading: true });
+      await UserService.delete(record.id);
+      toast.success('Registro deletado com sucesso!');
+      loadUsers();
+      updateStateTable({ loading: false });
+
+    } catch (err) {
+      updateStateTable({ loading: true });
+      toast.error('Erro ao deletar registro!');
+    }
+  }, []);
 
   return (
     <>
@@ -145,9 +185,6 @@ export default function BoardUser() {
       <PageHeader
         title="Usuários"
         subtitle="Gerenciamento"
-        onNewRegister={() => {
-          history.push(`/users/form`);
-        }}
         buttonsPageHeader={buttonsPageHeader}
       // Ativar o back history
       // activeBackHistorty
@@ -164,7 +201,7 @@ export default function BoardUser() {
           defaultCurrent: page,
           total: totalElements
         }}
-        columns={columns}
+        columns={columns({ onDelete: handleDelete })}
         dataSource={dados} />
     </>
   );

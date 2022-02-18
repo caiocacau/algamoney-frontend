@@ -3,6 +3,11 @@ import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 function itemRender(route, params, routes, paths) {
+    // console.log("params: " + params);
+    // console.log("route: " + route);
+    // console.log("routes: " + routes);
+    // console.log("paths: " + paths);
+
     const first = routes.indexOf(route) === 0;
     const last = routes.indexOf(route) === routes.length - 1;
     return last ? (
@@ -11,10 +16,12 @@ function itemRender(route, params, routes, paths) {
         first ? (
             <>
                 <HomeOutlined style={{ color: '#e26565', float: 'left', marginTop: '2px' }}/>
-                <Link to={paths.join('/')} > {route.breadcrumbName}</Link >
+                {/* <Link to={paths.join('/')} > {route.breadcrumbName}</Link > */}
+                <Link to={`/${route.path}`} > {route.breadcrumbName}</Link >
             </>
         ) : (
-            <Link to={paths.join('/')} > {route.breadcrumbName}</Link >
+            // <Link to={paths.push(`/`)} > {route.breadcrumbName}</Link >
+            <Link to={`/${route.path}`} > {route.breadcrumbName}</Link >
         )
     )
 }

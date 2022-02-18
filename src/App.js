@@ -12,6 +12,7 @@ import Raiz from "./components/raiz.component";
 import Home from "./components/home.component";
 import Profile from "./components/profile.component";
 import BoardUser from "./components/board-user.component";
+import FormUser from "./pages/form-user.page";
 import BoardModerator from "./components/board-moderator.component";
 import BoardAdmin from "./components/board-admin.component";
 
@@ -43,7 +44,7 @@ class App extends Component {
 
     if (user) {
       // console.log(user)
-      if(!user.roles) {
+      if (!user.roles) {
         localStorage.removeItem("user");
         history.push("/login");
       }
@@ -152,6 +153,10 @@ class App extends Component {
               <Route exact path="/login" component={Login} />
               <Route exact path="/register" component={Register} />
               <Route exact path="/profile" component={Profile} />
+              <Route path="/user/form" component={FormUser}/>
+              {/* <Route path="/user/form">
+                <Route path=":codigo" element={<FormUser />} />
+              </Route> */}
               <Route path="/user" component={BoardUser} />
               <Route path="/mod" component={BoardModerator} />
               <Route path="/admin" component={BoardAdmin} />
