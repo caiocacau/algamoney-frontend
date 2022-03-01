@@ -12,12 +12,18 @@ import PageHeader from "./utils/pageHeader";
 
 import BreadCrumb from "./utils/breadCrumb";
 import GroupAcoes from "./utils/acoesTable/groupAcoes";
+import tokenService from "../services/token.service";
 
 const PAGE_SIZE = 6;
 
 export const MODULO_ROUTE = 'user';
 
 export default function BoardUser() {
+
+  const currentUser = tokenService.getUser();
+
+  // console.log("currentUser: " + currentUser.email);
+  // console.log(currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA')))
 
   const [page, setPage] = useState(1);
 
@@ -125,6 +131,7 @@ export default function BoardUser() {
           moduloSistema={MODULO_ROUTE}
           record={record}
           onDelete={onDelete}
+          render={currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA' || role === 'ROLE_PESQUISAR_PESSOA')).length > 0 && record.codigo === 5}
         />
       ),
     },
@@ -167,7 +174,7 @@ export default function BoardUser() {
     try {
 
       updateStateTable({ loading: true });
-      await UserService.delete(record.id);
+      await UserService.delete(record.codigo);
       toast.success('Registro deletado com sucesso!');
       loadUsers();
       updateStateTable({ loading: false });

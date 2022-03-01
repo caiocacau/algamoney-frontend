@@ -4,14 +4,19 @@ import { ContainerFlex } from "./styles";
 import { Button, Divider, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-function GroupAcoes({ moduloSistema, onDelete, record }) {
+function GroupAcoes({ moduloSistema, onDelete, record, render }) {
     const router = useHistory();
 
     return (
-        <ContainerFlex>
+        // Com o render na linha abaixo, o componente só será renderizado caso a condição seja verdadeira
+        render && <ContainerFlex >
+        {/*Caso queira que o botão apareça desabilitado, comentar a linha acima e descomentar a linha abaixo e o disabled
+         </ContainerFlex> */}
             <Button
                 // type="primary"
+                title="Editar"
                 icon={<EditOutlined />}
+                // disabled={!render}
                 onClick={() =>
                     router.push({
                         pathname: `/${moduloSistema}/form`,
@@ -34,7 +39,7 @@ function GroupAcoes({ moduloSistema, onDelete, record }) {
                 onConfirm={() => onDelete(record)}
             >
                 <Button
-                    title="danger"
+                    title="Excluir"
                     icon={<DeleteOutlined />}
                     style={{
                         display: 'flex',
