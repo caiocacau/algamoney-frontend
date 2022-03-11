@@ -1,19 +1,23 @@
+// eslint prettier
 import React, { useCallback, useEffect, useState } from "react";
-import BreadCrumb from "./utils/breadCrumb";
+// import BreadCrumb from "./utils/breadCrumb";
 import PageHeader from "./utils/pageHeader";
-import { Form, Button, Input, Checkbox, Divider, Row, Col } from "antd";
+import { Form, Button, Input, Radio, Checkbox, Divider, Row, Col } from "antd";
 import eventBus from "../common/EventBus";
 import { toast } from "react-toastify";
 import userService from "../services/user.service";
 import permissaoService from "../services/permissao.service";
 import { history } from "../helpers/history";
-import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
+// import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 
-function FormUserEdit() {
+function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
 
-  const location = useLocation();
+  // const location = useLocation();
 
-  const codigo = location.state?.codigo
+  // const acao = location.state?.acao;
+
+  // console.log('acao 1: ', acao);
+  // console.log('stateSearch 1: ', stateSearch);
 
   const [form] = Form.useForm();
 
@@ -24,11 +28,13 @@ function FormUserEdit() {
       nome: '',
       email: '',
       senha: '',
+      ativo: 'S',
       permissoes: []
     }
   });
 
-  const { loading, dadosForm } = stateForm;
+  // const { loading, dadosForm } = stateForm;
+  const { dadosForm } = stateForm;
 
   const updateStateForm = useCallback(newProperties => {
     setStateForm(prev => ({ ...prev, ...newProperties }));
@@ -40,11 +46,13 @@ function FormUserEdit() {
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
 
+  const [ajustarSenha, setAjustarSenha] = useState(false);
+
+  const [valueRadioAtivo, setValueRadioAtivo] = React.useState('S');
+
   useEffect(() => {
     (async () => {
       try {
-
-        console.log(codigo);
 
         updateStateForm({ loading: true });
 
@@ -91,25 +99,33 @@ function FormUserEdit() {
     setCheckAll(e.target.checked);
   };
 
-  const routes = [
-    {
-      path: 'home',
-      breadcrumbName: 'Home',
-    },
-    {
-      path: 'user',
-      breadcrumbName: 'User',
-    },
-    {
-      path: 'user/form',
-      breadcrumbName: 'User Form',
-    }
-  ];
+  function onChangeAlterarSenha(e) {
+    setAjustarSenha(e.target.checked);
+  }
 
-   const handleSubmit = useCallback(async (values) => {
+  const onChangeRadioSimNao = e => {
+    setValueRadioAtivo(e.target.value);
+  };
+
+  // const routes = [
+  //   {
+  //     path: 'home',
+  //     breadcrumbName: 'Home',
+  //   },
+  //   {
+  //     path: 'user',
+  //     breadcrumbName: 'User',
+  //   },
+  //   {
+  //     path: 'user/form',
+  //     breadcrumbName: 'User Form',
+  //   }
+  // ];
+
+  const handleSubmit = useCallback(async (values) => {
 
     try {
-
+      // console.log(values);
       updateStateForm({ loading: true });
       values.permissoes = checkedList;
 
@@ -117,37 +133,46 @@ function FormUserEdit() {
         nome: values.nome,
         email: values.email,
         senha: values.senha,
+        ativo: values.ativo,
         permissoes: values.permissoes
       }
 
       // Atualizando registro
-      if (!codigo) {
+      if (acao === 'insert') {
         await userService.insert(newUser);
-      } else {
+      } else if (acao === 'update') {
         newUser.codigo = codigo;
         await userService.update(newUser);
+      } else if (acao === 'delete') {
+        await userService.delete(codigo);
       }
 
-      history.push('/user');
-      toast.success(`Registro ${codigo ? 'alterado' : 'inserido'} com sucesso!`)
+      history.push('/user', { page, stateSort, stateSearch, sortByState: 'N' });
+      toast.success(`Registro ${acao === 'insert' ? 'inserido' : (acao === 'update' ? 'alterado' : 'excluído')} com sucesso!`)
 
     } catch (err) {
       updateStateForm({ loading: false });
-      toast.error(`Erro ao ${codigo ? 'alterar' : 'inserir'} o registro!`)
+      toast.error(err.response.data[0]?.mensagemUsuario ? err.response.data[0].mensagemUsuario : `Erro ao ${acao === 'insert' ? 'inserir' : (acao === 'update' ? 'alterar' : 'excluir')} o registro!`);
     }
 
-  }, [checkedList, updateStateForm, codigo]);
+  }, [checkedList, updateStateForm, codigo, acao]);
+
+  const acaoHasFeedback = ['view', 'delete'].indexOf(acao) < 0;
+  const acaoDisabled = ['view', 'delete'].indexOf(acao) > 0;
 
   return (
     <>
-      <BreadCrumb breadcrumb={routes} />
+      {/* <BreadCrumb breadcrumb={routes} /> */}
 
       <PageHeader
         title="Usuários"
-        subtitle="Formulário"
+        subtitle={`- ${acao === 'insert' ? 'Inclusão' : (acao === 'update' ? 'Alteração' : (acao === 'delete' ? 'Exclusão' : 'Detalhamento'))}`}
         // buttonsPageHeader={buttonsPageHeader}
         // Ativar o back history
-        activeBackHistorty
+        activeBackHistory
+        page={page}
+        stateSort={stateSort}
+        stateSearch={stateSearch}
       />
 
       <div className="App">
@@ -165,9 +190,9 @@ function FormUserEdit() {
                 { whitespace: true },
                 { min: 3 }
               ]}
-              hasFeedback
+              hasFeedback={acaoHasFeedback}
             >
-              <Input placeholder="Informe o nome" />
+              <Input placeholder="Informe o nome" disabled={acaoDisabled} />
             </Form.Item>
 
             <Form.Item
@@ -180,63 +205,89 @@ function FormUserEdit() {
                 },
                 { type: 'email', message: "Email informado inválido" },
               ]}
-              hasFeedback
+              hasFeedback={acaoHasFeedback}
             >
-              <Input placeholder="Informe o email" />
+              <Input placeholder="Informe o email" disabled={acaoDisabled} />
             </Form.Item>
 
-            <Form.Item
-              name="senha"
-              label="Senha"
-              rules={[
-                {
-                  required: true,
-                  message: 'Obrigatório'
-                },
-                { min: 5 },
-                {
-                  validator: (_, value) =>
-                    value && value.includes("A")
-                      ? Promise.resolve()
-                      : Promise.reject("Senha informada deve conter o caractere 'A'")
-                }
-              ]}
-              hasFeedback
+            {acao === 'update' && <Form.Item
+              label="Ajustar senha"
+              wrapperCol={{ span: 12 }}
             >
-              <Input.Password placeholder="Informe a senha" />
-            </Form.Item>
+              <Checkbox onChange={onChangeAlterarSenha} />
+            </Form.Item>}
 
-            <Form.Item
-              name="confirmSenha"
-              label="Confirmar Senha"
-              dependencies={["senha"]}
-              rules={[
-                {
-                  required: true,
-                  message: 'Obrigatório'
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('senha') === value) {
-                      return Promise.resolve()
+            {((acao === 'insert') || (acao === 'update' && ajustarSenha)) &&
+              <>
+                <Form.Item
+                  name="senha"
+                  label="Senha"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Obrigatório'
+                    },
+                    { min: 5 },
+                    {
+                      validator: (_, value) =>
+                        value && value.includes("A")
+                          ? Promise.resolve()
+                          : Promise.reject("Senha informada deve conter o caractere 'A'")
                     }
-                    return Promise.reject('Valores diferentes para senha e confirmação')
-                  }
-                })
-              ]}
-              hasFeedback
+                  ]}
+                  hasFeedback={acaoHasFeedback}
+                >
+                  <Input.Password placeholder="Informe a senha" disabled={acaoDisabled} />
+                </Form.Item>
+
+                <Form.Item
+                  name="confirmSenha"
+                  label="Confirmar Senha"
+                  dependencies={["senha"]}
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Obrigatório'
+                    },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('senha') === value) {
+                          return Promise.resolve()
+                        }
+                        return Promise.reject('Valores diferentes para senha e confirmação')
+                      }
+                    })
+                  ]}
+                  hasFeedback={acaoHasFeedback}
+                >
+                  <Input.Password placeholder="Confirmar senha" disabled={acaoDisabled} />
+                </Form.Item>
+              </>
+            }
+
+            <Form.Item
+              label="Ativo"
+              name="ativo"
+              wrapperCol={{ span: 12 }}
             >
-              <Input.Password placeholder="Confirmar senha" />
+              <Radio.Group onChange={onChangeRadioSimNao} value={valueRadioAtivo} disabled={acaoDisabled}>
+                <Radio value={'S'}>Sim</Radio>
+                <Radio value={'N'}>Não</Radio>
+              </Radio.Group>
             </Form.Item>
 
             <Form.Item
               label="Permissões"
               wrapperCol={{ span: 12 }}
             >
-              <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}>
-                Selecionar todos
-              </Checkbox>
-              <Divider />
+              {!acaoDisabled && (
+                <>
+                  <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}>
+                    Selecionar todos
+                  </Checkbox>
+                  <Divider />
+                </>
+              )}
 
               { /**************************************************
                 Versão anterior sem alinhamento por <Row> and <Col>
@@ -244,7 +295,7 @@ function FormUserEdit() {
                <CheckboxGroup options={options} style={{ width: '100%', backgroundColor: 'red' }} value={checkedList?.map(checked => checked.value)} onChange={onChange} > 
                */}
 
-              <CheckboxGroup style={{ width: '100%' }} value={checkedList?.map(checked => checked.codigo)} onChange={onChange} >
+              <CheckboxGroup style={{ width: '100%' }} value={checkedList?.map(checked => checked.codigo)} onChange={onChange} disabled={acaoDisabled} >
                 <Row>
                   {options?.map((item) =>
                     <Col span={12}>
@@ -256,9 +307,11 @@ function FormUserEdit() {
               </CheckboxGroup>
             </Form.Item>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit">Salvar</Button>
-            </Form.Item>
+            {['insert','update','delete'].indexOf(acao) >= 0 &&
+              <Form.Item>
+                <Button type="primary" htmlType="submit">Salvar</Button>
+              </Form.Item>
+            }
 
           </Form>
         </header>

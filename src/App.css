@@ -44,6 +44,8 @@ label {
 
 .ant-page-header-heading-sub-title {
   margin-top: 4px;
+  font-size: 18px;
+  color: rgba(226, 101, 101, 0.85);
 }
 
 .ant-btn-round {

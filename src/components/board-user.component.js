@@ -7,64 +7,97 @@ import { Table } from 'antd';
 
 import { PlusOutlined, HomeOutlined, LoadingOutlined } from '@ant-design/icons';
 import eventBus from "../common/EventBus";
-import { getColumnSorterProps, getColumnSearchProps } from "./utils/tableUtils";
+import { getColumnSorterProps, getColumnSearchProps, getColumnSearchOptionsProps } from "./utils/tableUtils";
 import PageHeader from "./utils/pageHeader";
 
 import BreadCrumb from "./utils/breadCrumb";
 import GroupAcoes from "./utils/acoesTable/groupAcoes";
 import tokenService from "../services/token.service";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 5;
 
 export const MODULO_ROUTE = 'user';
 
-export default function BoardUser() {
+export default function BoardUser(props) {
 
   const currentUser = tokenService.getUser();
 
   // console.log("currentUser: " + currentUser.email);
   // console.log(currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA')))
 
+  const pageR = props.location.state?.page; // Retorno via state para atualização do parametro
   const [page, setPage] = useState(1);
 
+  const stateTableR = props.location.state?.stateTable; // Retorno via state para atualização dos parametros
   const [stateTable, setStateTable] = useState({
     loading: false,
     dados: [],
     totalElements: 0,
-    activeSort: 'codigo',
-    columnSort: 'codigo',
-    columnDirectionSort: 'asc',
   });
 
+  // Retorno via state do stateSort.activeSort para atualização do parametro, caso contrário sempre será nulo
+  const [atualizaSortR, setAtualizaSortR] = useState(props.location.state?.stateSort?.activeSort ? 'N' : null);
+  // const [atualizaSort, setAtualizaSort] = useState('S');
+
+  const stateSortR = props.location.state?.stateSort; // Retorno via state para atualização dos parametros
+  // console.log('stateSortR', stateSortR);
+  const [stateSort, setStateSort] = useState(stateSortR ? stateSortR : {
+    activeSort: null,
+    columnSort: null,
+    xcolumnDirectionSort: null, // incialmente coloca assim para ajustar com o defaultSortOrder do columns
+  });
+
+  const stateSearchR = props.location.state?.stateSearch; // Retorno via state para atualização dos parametros
   const [stateSearch, setStateSearch] = useState({
-    codigo: 0,
+    codigo: null,
     nome: '',
     email: '',
+    ativos: []
   });
 
   // Desestruturando o objeto ou seja, tirando as variáveis de dentro do objeto para poder usar diretamente na classe(ex: activeSort ao invés de stateTable.activeSort)
-  const { loading, dados, totalElements, activeSort } = stateTable;
+  const { loading, dados, totalElements } = stateTable;
 
-  const { codigo, nome, email } = stateSearch;
+  const { activeSort, columnSort, xcolumnDirectionSort } = stateSort;
+
+  const { codigo, nome, email, ativos } = stateSearch;
 
   const updateStateTable = useCallback(newProperties => {
     setStateTable(prev => ({ ...prev, ...newProperties }));
+  }, []);
+
+  const updateStateSort = useCallback(newProperties => {
+    setStateSort(prev => ({ ...prev, ...newProperties }));
   }, []);
 
   const updateStateSearch = useCallback(newProperties => {
     setStateSearch(prev => ({ ...prev, ...newProperties }));
   }, []);
 
+  useEffect(() => {
+    if (pageR) {
+      setPage(pageR)
+    }
+  }, [pageR])
+
+  useEffect(() => {
+    if (stateTableR) {
+      updateStateTable(stateTableR)
+    }
+  }, [updateStateTable, stateTableR])
+
+  useEffect(() => {
+    if (stateSearchR) {
+      updateStateSearch(stateSearchR)
+    }
+  }, [updateStateSearch, stateSearchR])
+
   const loadUsers = useCallback(async () => {
     try {
 
       updateStateTable({ loading: true });
 
-      // console.log(page);
-
-      const response = await UserService.getUserBoard(codigo, nome, email, page - 1, PAGE_SIZE, activeSort);
-
-      // console.log(response.data)
+      const response = await UserService.getUserBoard(codigo, nome, email, ativos, page - 1, PAGE_SIZE, atualizaSortR === 'N' && columnSort ? (columnSort + ',' + (xcolumnDirectionSort === 'ascend' ? 'asc' : 'desc')) : activeSort);
 
       updateStateTable({
         dados: response.data.content,
@@ -80,20 +113,24 @@ export default function BoardUser() {
     } finally {
       updateStateTable({ loading: false });
     }
-  }, [page, codigo, nome, email, activeSort, updateStateTable]);
+  }, [page, codigo, nome, email, ativos, activeSort, updateStateTable, atualizaSortR, columnSort, xcolumnDirectionSort]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
 
   const columns = (onDelete => [
     {
       title: 'Código',
       dataIndex: 'codigo',
       key: 'codigo',
-      width: '10%',
+      width: '5%',
+      align: 'right',
+      filteredValue: stateSearch.codigo?.length > 0 ? [stateSearch.codigo] : null,
       sortDirections: ['ascend', 'descend', 'ascend'],
-      ...getColumnSorterProps({ dataIndex: 'codigo', stateTable, updateStateTable }),
+      defaultSortOrder: columnSort === 'codigo' ? (xcolumnDirectionSort !== null ? xcolumnDirectionSort : false) : false,
+      ...getColumnSorterProps({ dataIndex: 'codigo', stateSort, updateStateSort, atualizaSortR, setAtualizaSortR, totalElements }),
       ...getColumnSearchProps({ dataIndex: 'codigo', type: 'number', isAtualizarEventOnChange: true, updateStateSearch }),
     },
     {
@@ -101,8 +138,10 @@ export default function BoardUser() {
       dataIndex: 'nome',
       key: 'nome',
       width: '30%',
+      filteredValue: stateSearch.nome?.length > 0 ? [stateSearch.nome] : null,
       sortDirections: ['ascend', 'descend', 'ascend'],
-      ...getColumnSorterProps({ dataIndex: 'nome', stateTable, updateStateTable }),
+      defaultSortOrder: columnSort === 'nome' ? (xcolumnDirectionSort !== null ? xcolumnDirectionSort : false) : false,
+      ...getColumnSorterProps({ dataIndex: 'nome', stateSort, updateStateSort, atualizaSortR, setAtualizaSortR, totalElements }),
       ...getColumnSearchProps({ dataIndex: 'nome', type: 'text', isAtualizarEventOnChange: true, updateStateSearch }),
     },
     {
@@ -110,28 +149,59 @@ export default function BoardUser() {
       dataIndex: 'email',
       key: 'email',
       width: '20%',
+      filteredValue: stateSearch.email?.length > 0 ? [stateSearch.email] : null,
       sortDirections: ['ascend', 'descend', 'ascend'],
-      ...getColumnSorterProps({ dataIndex: 'email', stateTable, updateStateTable }),
+      defaultSortOrder: columnSort === 'email' ? (xcolumnDirectionSort !== null ? xcolumnDirectionSort : false) : false,
+      ...getColumnSorterProps({ dataIndex: 'email', stateSort, updateStateSort, atualizaSortR, setAtualizaSortR, totalElements }),
       ...getColumnSearchProps({ dataIndex: 'email', type: 'email', isAtualizarEventOnChange: true, updateStateSearch }),
+    },
+    {
+      title: 'Ativo',
+      dataIndex: 'ativo',
+      key: 'ativo',
+      width: '5%',
+      align: 'center',
+      sortDirections: ['ascend', 'descend', 'ascend'],
+      filters: [
+        {
+          text: 'Sim',
+          value: 'S',
+          key: 'sim',
+        },
+        {
+          text: 'Não',
+          value: 'N',
+          key: 'nao',
+        },
+      ],
+      filteredValue: stateSearch.ativos?.length > 0 ? stateSearch.ativos : null,
+      defaultSortOrder: columnSort === 'ativo' ? (xcolumnDirectionSort !== null ? xcolumnDirectionSort : false) : false,
+      ...getColumnSorterProps({ dataIndex: 'ativo', stateSort, updateStateSort, atualizaSortR, setAtualizaSortR, totalElements }),
+      ...getColumnSearchOptionsProps({ dataIndexObjectList: 'ativos', updateStateSearch }),
+      render: (text) => (text === 'S' ? 'Sim' : 'Não')
     },
     {
       title: 'Permissões',
       dataIndex: 'permissoes',
       key: 'permissoes',
-      width: '40%',
+      width: '30%',
       render: (text) =>
-        text.map(t => <p key={t.codigo} style={{ marginBottom: '2px' }} >{t.descricao} </p>)
+        text.map(t => <p key={t.descricao} style={{ marginBottom: '2px' }} >{t.descricao} </p>)
     },
     {
       title: 'Ações',
       key: 'action',
+      width: '10%',
       align: 'center',
       render: (text, record) => (
         <GroupAcoes
           moduloSistema={MODULO_ROUTE}
           record={record}
           onDelete={onDelete}
-          render={currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA' || role === 'ROLE_PESQUISAR_PESSOA')).length > 0 && record.codigo === 5}
+          page={page}
+          stateSort={stateSort}
+          stateSearch={stateSearch}
+          render={currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA' || role === 'ROLE_PESQUISAR_PESSOA')).length > 0 && record.codigo > 2}
         />
       ),
     },
@@ -166,7 +236,8 @@ export default function BoardUser() {
       tituloToolTip: 'Adicionar',
       icon: <PlusOutlined />,
       size: 'small',
-      rota: '/user/form'
+      rota: '/user/form',
+      acao: 'insert'
     }
   ];
 
@@ -183,7 +254,7 @@ export default function BoardUser() {
       updateStateTable({ loading: true });
       toast.error('Erro ao deletar registro!');
     }
-  }, []);
+  }, [loadUsers, updateStateTable]);
 
   return (
     <>
@@ -193,10 +264,15 @@ export default function BoardUser() {
         title="Usuários"
         subtitle="Gerenciamento"
         buttonsPageHeader={buttonsPageHeader}
-      // Ativar o back history
-      // activeBackHistorty
+        // Ativar o back history
+        // activeBackHistorty
+        page={page}
+        stateSort={stateSort}
+        stateSearch={stateSearch}
       />
       <Table
+
+        bordered
         rowKey="codigo"
         loading={loading}
         pagination={{

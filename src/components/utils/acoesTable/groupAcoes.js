@@ -1,10 +1,11 @@
 import { useHistory } from "react-router-dom";
 import { ContainerFlex } from "./styles";
 
-import { Button, Divider, Popconfirm } from "antd";
+import { Button, Divider } from "antd";
+// Popconfirm from antd
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-function GroupAcoes({ moduloSistema, onDelete, record, render }) {
+function GroupAcoes({ moduloSistema, onDelete, record, page, stateSort, stateSearch, render }) {
     const router = useHistory();
 
     return (
@@ -21,7 +22,11 @@ function GroupAcoes({ moduloSistema, onDelete, record, render }) {
                     router.push({
                         pathname: `/${moduloSistema}/form`,
                         state: {
-                            codigo: record.codigo
+                            acao: 'update',
+                            codigo: record.codigo,
+                            page,
+                            stateSort,
+                            stateSearch,
                         }    
                     })
                 }
@@ -34,20 +39,32 @@ function GroupAcoes({ moduloSistema, onDelete, record, render }) {
 
             <Divider type="vertical" />
 
-            <Popconfirm
+            {/* <Popconfirm
                 title="Deseja excluir o registro?"
                 onConfirm={() => onDelete(record)}
-            >
+            > */}
                 <Button
                     title="Excluir"
                     icon={<DeleteOutlined />}
+                    onClick={() =>
+                        router.push({
+                            pathname: `/${moduloSistema}/form`,
+                            state: {
+                                acao: 'delete',
+                                codigo: record.codigo,
+                                page,
+                                stateSort,
+                                stateSearch,
+                            }    
+                        })
+                    }
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
                 />
-            </Popconfirm>
+            {/* </Popconfirm> */}
         </ContainerFlex>
     )
 }
