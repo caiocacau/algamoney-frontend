@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  /* justify-content: end; */
+  align-items: flex-end;
+  width: 100%;
+}
+
+.row {
+  width: 100%;
+  padding: 10px 0 0;
+  border-top: 2px solid rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  font: 14px Arial;
+}
+
+.conteudo {
+  color: rgb(190, 190, 190);
+  margin-left: 4px;
+}
+
+.versao {
+  color: rgb(250, 150, 150);
+  margin-left: 4px;
+}

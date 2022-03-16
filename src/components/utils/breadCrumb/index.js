@@ -15,22 +15,32 @@ function itemRender(route, params, routes, paths) {
     ) : (
         first ? (
             <>
-                <HomeOutlined style={{ color: '#e26565', float: 'left', marginTop: '2px' }}/>
+                <HomeOutlined style={{ color: '#e26565', float: 'left', marginTop: '2px' }} />
                 {/* <Link to={paths.join('/')} > {route.breadcrumbName}</Link > */}
                 <Link to={`/${route.path}`} > {route.breadcrumbName}</Link >
             </>
         ) : (
             // <Link to={paths.push(`/`)} > {route.breadcrumbName}</Link >
-            <Link to={`/${route.path}`} > {route.breadcrumbName}</Link >
+            // <Link to={`/${route.path}`} > {route.breadcrumbName}</Link >
+            <Link to={{
+                pathname: `/${route.path}`,
+                state: {
+                    pageSize: route.pageSize,
+                    page: route.page,
+                    stateSort: route.stateSort,
+                    stateSearch: route.stateSearch
+                }
+            }} > {route.breadcrumbName}</Link >
         )
     )
 }
 
 function BreadCrumb(props) {
 
+    const classname = props.className;
     const routes = props.breadcrumb;
 
-    return <Breadcrumb separator=">" itemRender={itemRender} routes={routes} />
+    return <Breadcrumb className={classname} separator=">" itemRender={itemRender} routes={routes} />
 
 }
 

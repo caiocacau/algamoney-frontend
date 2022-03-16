@@ -39,7 +39,7 @@ label {
 }
 
 .ant-page-header {
-  padding: 2px 0px;
+  padding: 2px 0 0 2px;
 } 
 
 .ant-page-header-heading-sub-title {
@@ -56,3 +56,33 @@ label {
 .ant-table-thead, th {
   background-color: rgb(226, 101, 101) !important;
 }
+
+.ant-form, .ant-page-header-heading-form, .ant-breadcrumb-form {
+  background-color: #ffe9e9 !important;
+}
+
+.ant-breadcrumb-form {
+  padding: 10px 0 0 10px;
+}
+
+.ant-page-header-heading-form {
+  padding: 0 0 0 10px;
+}
+
+.ant-form-item {
+  margin: 0;
+  padding: 10px 0px;
+}
+
+.ant-form-item-label, label {
+  margin: 0px;
+}
+
+.ant-form-item-required {
+  margin: 0;
+}
+
+.checkbox-selecionar-todos {
+  margin-top: 5px;
+}
+

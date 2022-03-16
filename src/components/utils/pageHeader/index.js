@@ -1,20 +1,14 @@
 import { Button, PageHeader as Header, Tooltip } from "antd";
 
-import { history } from '../../helpers/history'
-
-// descricao: 'Usuário',
-// tituloToolTip: 'Adicionar',
-// icon: <PlusOutlined />,
-// size: 'small',
-// rota: '/user/form',
-// acao: 'insert',
-// stateSearch: { nome: 'ia' }
+import { history } from '../../../helpers/history'
 
 function PageHeader({
+    className,
     title,
     subtitle,
     buttonsPageHeader,
     activeBackHistory,
+    pageSize,
     page,
     stateSort,
     stateSearch
@@ -40,8 +34,8 @@ function PageHeader({
                                         button.acao ?
                                             (
                                                 // estabecendo na lógica que esses componentes são juntos da lógica da table do programa chamador
-                                                page || stateSort || stateSearch ?
-                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, page, stateSort, stateSearch }) :
+                                                pageSize || page || stateSort || stateSearch ?
+                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, pageSize, page, stateSort, stateSearch }) :
                                                     history.push(`${button.rota}`, { acao: `${button.acao}` })
                                             ) :
                                             history.push(`${button.rota}`)
@@ -60,8 +54,8 @@ function PageHeader({
                                         button.acao ?
                                             (
                                                 // estabecendo na lógica que esses componentes são juntos da lógica da table do programa chamador
-                                                page || stateSort || stateSearch ?
-                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, page, stateSort, stateSearch }) :
+                                                pageSize || page || stateSort || stateSearch ?
+                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, pageSize, page, stateSort, stateSearch }) :
                                                     history.push(`${button.rota}`, { acao: `${button.acao}` })
                                             ) :
                                             history.push(`${button.rota}`)
@@ -94,6 +88,7 @@ function PageHeader({
         props.onBack = () => history.push({
             pathname: '/user',
             state: {
+                pageSize, 
                 page,
                 stateSort,
                 stateSearch,
@@ -101,7 +96,7 @@ function PageHeader({
         });
     }
 
-    return <Header title={title} subTitle={subtitle} extra={extra} {...props} />;
+    return <Header className={className} title={title} subTitle={subtitle} extra={extra} {...props} />;
 }
 
 export default PageHeader;

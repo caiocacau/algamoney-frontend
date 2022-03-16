@@ -7,23 +7,23 @@ import { Table } from 'antd';
 
 import { PlusOutlined, HomeOutlined, LoadingOutlined } from '@ant-design/icons';
 import eventBus from "../common/EventBus";
-import { getColumnSorterProps, getColumnSearchProps, getColumnSearchOptionsProps } from "./utils/tableUtils";
-import PageHeader from "./utils/pageHeader";
+import { getColumnSorterProps, getColumnSearchProps, getColumnSearchOptionsProps } from "./utils/tableUtils/index";
+import PageHeader from "./utils/pageHeader/index";
 
-import BreadCrumb from "./utils/breadCrumb";
+// import BreadCrumb from "./utils/breadCrumb/index";
 import GroupAcoes from "./utils/acoesTable/groupAcoes";
 import tokenService from "../services/token.service";
-
-const PAGE_SIZE = 5;
 
 export const MODULO_ROUTE = 'user';
 
 export default function BoardUser(props) {
-
+  
   const currentUser = tokenService.getUser();
-
+  
   // console.log("currentUser: " + currentUser.email);
   // console.log(currentUser.roles.filter(role => (role === 'ROLE_CADASTRAR_PESSOA')))
+  const pageSizeR = props.location.state?.pageSize; // Retorno via state para atualização do parametro
+  const [pageSize, setPageSize] = useState(6);
 
   const pageR = props.location.state?.page; // Retorno via state para atualização do parametro
   const [page, setPage] = useState(1);
@@ -75,6 +75,12 @@ export default function BoardUser(props) {
   }, []);
 
   useEffect(() => {
+    if (pageSizeR) {
+      setPageSize(pageSizeR)
+    }
+  }, [pageSizeR])
+
+  useEffect(() => {
     if (pageR) {
       setPage(pageR)
     }
@@ -97,7 +103,7 @@ export default function BoardUser(props) {
 
       updateStateTable({ loading: true });
 
-      const response = await UserService.getUserBoard(codigo, nome, email, ativos, page - 1, PAGE_SIZE, atualizaSortR === 'N' && columnSort ? (columnSort + ',' + (xcolumnDirectionSort === 'ascend' ? 'asc' : 'desc')) : activeSort);
+      const response = await UserService.getUserBoard(codigo, nome, email, ativos, page - 1, pageSize, atualizaSortR === 'N' && columnSort ? (columnSort + ',' + (xcolumnDirectionSort === 'ascend' ? 'asc' : 'desc')) : activeSort);
 
       updateStateTable({
         dados: response.data.content,
@@ -113,7 +119,7 @@ export default function BoardUser(props) {
     } finally {
       updateStateTable({ loading: false });
     }
-  }, [page, codigo, nome, email, ativos, activeSort, updateStateTable, atualizaSortR, columnSort, xcolumnDirectionSort]);
+  }, [page, pageSize, codigo, nome, email, ativos, activeSort, updateStateTable, atualizaSortR, columnSort, xcolumnDirectionSort]);
 
   useEffect(() => {
     loadUsers();
@@ -198,6 +204,7 @@ export default function BoardUser(props) {
           moduloSistema={MODULO_ROUTE}
           record={record}
           onDelete={onDelete}
+          pageSize={pageSize}
           page={page}
           stateSort={stateSort}
           stateSearch={stateSearch}
@@ -207,16 +214,16 @@ export default function BoardUser(props) {
     },
   ]);
 
-  const routes = [
-    {
-      path: 'home',
-      breadcrumbName: 'Home',
-    },
-    {
-      path: 'user',
-      breadcrumbName: 'User',
-    }
-  ];
+  // const routes = [
+  //   {
+  //     path: 'home',
+  //     breadcrumbName: 'Home',
+  //   },
+  //   {
+  //     path: 'user',
+  //     breadcrumbName: 'User',
+  //   }
+  // ];
 
   const buttonsPageHeader = [
     {
@@ -256,22 +263,44 @@ export default function BoardUser(props) {
     }
   }, [loadUsers, updateStateTable]);
 
+  function onShowSizeChange(current, pageSize) {
+    console.log(current, pageSize);
+    setPageSize(pageSize);
+  }
+
+  function itemRender(current, type, originalElement) {
+    if (type === 'prev') {
+      return <a>Anterior</a>;
+    }
+    if (type === 'next') {
+      return <a>Próximo</a>;
+    }
+    // if (type === 'first') {
+    //   return <a>Primeiro</a>;
+    // }
+    // if (type === 'last') {
+    //   return <a>Último</a>;
+    // }
+    return originalElement;
+  }
+
   return (
     <>
-      <BreadCrumb breadcrumb={routes} />
+      {/* <BreadCrumb breadcrumb={routes} /> */}
 
-      <PageHeader
+      <PageHeader 
         title="Usuários"
         subtitle="Gerenciamento"
         buttonsPageHeader={buttonsPageHeader}
         // Ativar o back history
         // activeBackHistorty
+        pageSize={pageSize}
         page={page}
         stateSort={stateSort}
         stateSearch={stateSearch}
       />
-      <Table
 
+      <Table
         bordered
         rowKey="codigo"
         loading={loading}
@@ -279,10 +308,14 @@ export default function BoardUser(props) {
           onChange: pageChange => {
             setPage(pageChange);
           },
-          pageSize: PAGE_SIZE,
+          showSizeChanger: true,
+          onShowSizeChange,
+          pageSize: pageSize,
+          pageSizeOptions: [6,12,15,20,50],
           current: page,
           defaultCurrent: page,
-          total: totalElements
+          total: totalElements,
+          itemRender,
         }}
         columns={columns({ onDelete: handleDelete })}
         dataSource={dados} />

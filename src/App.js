@@ -22,6 +22,7 @@ import { clearMessage } from "./actions/message";
 import { history } from './helpers/history';
 
 import EventBus from "./common/EventBus";
+import Footer from "./components/utils/footer/index";
 
 class App extends Component {
   constructor(props) {
@@ -145,7 +146,8 @@ class App extends Component {
             )}
           </nav>
 
-          <div className="container mt-3">
+          {/* <div className="container mt-3"> */}
+          <div className="container">
             <Switch>
               {/* <Route exact path={["/", "/home"]} component={Home} /> */}
               <Route exact path="/" component={Raiz} />
@@ -153,7 +155,7 @@ class App extends Component {
               <Route exact path="/login" component={Login} />
               <Route exact path="/register" component={Register} />
               <Route exact path="/profile" component={Profile} />
-              <Route path="/user/form" component={FormUser}/>
+              <Route path="/user/form" component={FormUser} />
               {/* <Route path="/user/form">
                 <Route path=":codigo" element={<FormUser />} />
               </Route> */}
@@ -163,6 +165,12 @@ class App extends Component {
             </Switch>
           </div>
         </div>
+        {currentUser ?
+          <div>
+            <Footer />
+          </div>
+          : <></>
+        }
       </Router>
     );
   }

@@ -1,7 +1,7 @@
 // eslint prettier
 import React, { useCallback, useEffect, useState } from "react";
 // import BreadCrumb from "./utils/breadCrumb";
-import PageHeader from "./utils/pageHeader";
+import PageHeader from "./utils/pageHeader/index";
 import { Form, Button, Input, Radio, Checkbox, Divider, Row, Col } from "antd";
 import eventBus from "../common/EventBus";
 import { toast } from "react-toastify";
@@ -10,7 +10,7 @@ import permissaoService from "../services/permissao.service";
 import { history } from "../helpers/history";
 // import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 
-function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
+function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) {
 
   // const location = useLocation();
 
@@ -147,7 +147,7 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
         await userService.delete(codigo);
       }
 
-      history.push('/user', { page, stateSort, stateSearch, sortByState: 'N' });
+      history.push('/user', { pageSize, page, stateSort, stateSearch, sortByState: 'N' });
       toast.success(`Registro ${acao === 'insert' ? 'inserido' : (acao === 'update' ? 'alterado' : 'excluído')} com sucesso!`)
 
     } catch (err) {
@@ -155,21 +155,33 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
       toast.error(err.response.data[0]?.mensagemUsuario ? err.response.data[0].mensagemUsuario : `Erro ao ${acao === 'insert' ? 'inserir' : (acao === 'update' ? 'alterar' : 'excluir')} o registro!`);
     }
 
-  }, [checkedList, updateStateForm, codigo, acao]);
+  }, [checkedList, updateStateForm, codigo, acao, pageSize, page, stateSearch, stateSort]);
 
   const acaoHasFeedback = ['view', 'delete'].indexOf(acao) < 0;
   const acaoDisabled = ['view', 'delete'].indexOf(acao) > 0;
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 8 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 12 },
+    },
+  };
 
   return (
     <>
       {/* <BreadCrumb breadcrumb={routes} /> */}
 
-      <PageHeader
+      <PageHeader 
+        className="ant-page-header-heading-form"
         title="Usuários"
         subtitle={`- ${acao === 'insert' ? 'Inclusão' : (acao === 'update' ? 'Alteração' : (acao === 'delete' ? 'Exclusão' : 'Detalhamento'))}`}
         // buttonsPageHeader={buttonsPageHeader}
         // Ativar o back history
         activeBackHistory
+        pageSize={pageSize}
         page={page}
         stateSort={stateSort}
         stateSearch={stateSearch}
@@ -177,7 +189,7 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
 
       <div className="App">
         <header className="App-header">
-          <Form autoComplete="off" form={form} onFinish={handleSubmit} labelCol={{ span: 6 }} wrapperCol={{ span: 12 }}>
+          <Form autoComplete="off" {...formItemLayout} form={form} onFinish={handleSubmit}>
 
             <Form.Item
               name="nome"
@@ -281,12 +293,12 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
               wrapperCol={{ span: 12 }}
             >
               {!acaoDisabled && (
-                <>
+                <div className="checkbox-selecionar-todos">
                   <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}>
                     Selecionar todos
                   </Checkbox>
                   <Divider />
-                </>
+                </div>
               )}
 
               { /**************************************************
@@ -298,7 +310,7 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
               <CheckboxGroup style={{ width: '100%' }} value={checkedList?.map(checked => checked.codigo)} onChange={onChange} disabled={acaoDisabled} >
                 <Row>
                   {options?.map((item) =>
-                    <Col span={12}>
+                    <Col lg={{ span: 12 }} md={{ span: 16 }} sm={{ span: 24 }} xs={{ span: 24 }}>
                       {/* <Checkbox value={item.value}>{item.label}</Checkbox> */}
                       <Checkbox value={item.codigo}>{item.descricao}</Checkbox>
                     </Col>
@@ -307,9 +319,22 @@ function FormUserEdit({ acao, codigo, page, stateSort, stateSearch }) {
               </CheckboxGroup>
             </Form.Item>
 
-            {['insert','update','delete'].indexOf(acao) >= 0 &&
-              <Form.Item>
-                <Button type="primary" htmlType="submit">Salvar</Button>
+            {['insert', 'update', 'delete'].indexOf(acao) >= 0 &&
+              <Form.Item
+                wrapperCol={{
+                  xs: { span: 24, offset: 0 },
+                  sm: { span: 14, offset: 10 },
+                }}
+              >
+                <Button type="primary" htmlType="submit" size="large" style={{ borderRadius: '6px' }}>Salvar</Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  style={{ borderRadius: '6px', marginLeft: '5px' }}
+                  onClick={() => history.push('/user', { pageSize, page, stateSort, stateSearch, sortByState: 'N' })}
+                >
+                  Cancelar
+                </Button>
               </Form.Item>
             }
 

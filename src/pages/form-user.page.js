@@ -1,4 +1,4 @@
-import BreadCrumb from "../components/utils/breadCrumb";
+import BreadCrumb from "../components/utils/breadCrumb/index";
 import FormUserEdit from '../components/form-user.component';
 
 function FormUser(props) {
@@ -8,6 +8,7 @@ function FormUser(props) {
 
     const acao = props.location.state?.acao;
     const codigo = props.location.state?.codigo;
+    const pageSize = props.location.state?.pageSize;
     const page = props.location.state?.page;
     const stateSort = props.location.state?.stateSort;
     const stateSearch = props.location.state?.stateSearch;
@@ -20,6 +21,10 @@ function FormUser(props) {
         {
             path: 'user',
             breadcrumbName: 'User',
+            pageSize,
+            page,
+            stateSort,
+            stateSearch
         },
         {
             path: 'user/form',
@@ -33,8 +38,8 @@ function FormUser(props) {
 
     return (
         <>
-            <BreadCrumb breadcrumb={routes} />
-            <FormUserEdit acao={acao} codigo={codigo || null} page={page} stateSort={stateSort} stateSearch={stateSearch} />
+            <BreadCrumb className="ant-breadcrumb-form" breadcrumb={routes} />
+            <FormUserEdit acao={acao} codigo={codigo || null} pageSize={pageSize} page={page} stateSort={stateSort} stateSearch={stateSearch} />
         </>
     );
 }

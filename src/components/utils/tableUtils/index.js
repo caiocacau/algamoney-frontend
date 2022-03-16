@@ -229,18 +229,19 @@ export const getColumnSearchProps = ({ dataIndex, type, isAtualizarEventOnChange
 });
 
 const handleSearch = (selectedKeys, setSelectedKeys, clearFilters, confirm, dataIndex, updateStateSearch) => {
-  console.log(selectedKeys);
+  // console.log('aqui selectedKeys: ', selectedKeys);
   if (selectedKeys === []) {
     handleReset(setSelectedKeys, selectedKeys, clearFilters, confirm, dataIndex, updateStateSearch);
   } else {
+    // console.log('aqui 1 selectedKeys[0]', selectedKeys[0]);
     if (dataIndex === "codigo") {
-      updateStateSearch({ codigo: selectedKeys[0] });
+      updateStateSearch({ codigo: selectedKeys[0] !== undefined ? selectedKeys[0] : '' });
     }
     if (dataIndex === "nome") {
-      updateStateSearch({ nome: selectedKeys[0] })
+      updateStateSearch({ nome: selectedKeys[0] !== undefined ? selectedKeys[0] : ''})
     }
     if (dataIndex === "email") {
-      updateStateSearch({ email: selectedKeys[0] })
+      updateStateSearch({ email: selectedKeys[0] !== undefined ? selectedKeys[0] : '' })
     }
     confirm();
     // eval('updateStateSearch({' + dataIndex + ':' + "'" + selectedKeys[0] + "'" + '})');
