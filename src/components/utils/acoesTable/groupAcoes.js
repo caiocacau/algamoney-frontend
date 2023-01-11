@@ -5,10 +5,8 @@ import { Button, Divider } from "antd";
 // Popconfirm from antd
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-function GroupAcoes({ moduloSistema, onDelete, record, pageSize, page, stateSort, stateSearch, render }) {
+function GroupAcoes({ moduloSistema, onDelete, record, activePageSize, activePage, stateSort, stateSearch, render }) {
     const router = useHistory();
-
-    console.log('pageSize: ', pageSize)
 
     return (
         // Com o render na linha abaixo, o componente só será renderizado caso a condição seja verdadeira
@@ -26,8 +24,8 @@ function GroupAcoes({ moduloSistema, onDelete, record, pageSize, page, stateSort
                         state: {
                             acao: 'update',
                             codigo: record.codigo,
-                            pageSize,
-                            page,
+                            activePageSize,
+                            activePage,
                             stateSort,
                             stateSearch,
                         }    
@@ -55,8 +53,8 @@ function GroupAcoes({ moduloSistema, onDelete, record, pageSize, page, stateSort
                             state: {
                                 acao: 'delete',
                                 codigo: record.codigo,
-                                pageSize,
-                                page,
+                                activePageSize,
+                                activePage,
                                 stateSort,
                                 stateSearch,
                             }    

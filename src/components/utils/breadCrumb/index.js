@@ -25,8 +25,8 @@ function itemRender(route, params, routes, paths) {
             <Link to={{
                 pathname: `/${route.path}`,
                 state: {
-                    pageSize: route.pageSize,
-                    page: route.page,
+                    activePageSize: route.activePageSize,
+                    activePage: route.activePage,
                     stateSort: route.stateSort,
                     stateSearch: route.stateSearch
                 }

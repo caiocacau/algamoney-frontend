@@ -8,8 +8,8 @@ function PageHeader({
     subtitle,
     buttonsPageHeader,
     activeBackHistory,
-    pageSize,
-    page,
+    activePageSize,
+    activePage,
     stateSort,
     stateSearch
 }) {
@@ -34,8 +34,8 @@ function PageHeader({
                                         button.acao ?
                                             (
                                                 // estabecendo na lógica que esses componentes são juntos da lógica da table do programa chamador
-                                                pageSize || page || stateSort || stateSearch ?
-                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, pageSize, page, stateSort, stateSearch }) :
+                                                activePageSize || activePage || stateSort || stateSearch ?
+                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, activePageSize, activePage, stateSort, stateSearch }) :
                                                     history.push(`${button.rota}`, { acao: `${button.acao}` })
                                             ) :
                                             history.push(`${button.rota}`)
@@ -54,8 +54,8 @@ function PageHeader({
                                         button.acao ?
                                             (
                                                 // estabecendo na lógica que esses componentes são juntos da lógica da table do programa chamador
-                                                pageSize || page || stateSort || stateSearch ?
-                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, pageSize, page, stateSort, stateSearch }) :
+                                                activePageSize || activePage || stateSort || stateSearch ?
+                                                    history.push(`${button.rota}`, { acao: `${button.acao}`, activePageSize, activePage, stateSort, stateSearch }) :
                                                     history.push(`${button.rota}`, { acao: `${button.acao}` })
                                             ) :
                                             history.push(`${button.rota}`)
@@ -71,6 +71,7 @@ function PageHeader({
                     <Tooltip key={button.descricao} title={button.tituloToolTip}>
                         <Button
                             type="link"
+                            key="button3"
                             style={{ color: 'black', padding: '5px' }}
                         >
                             {button.descricao}
@@ -88,8 +89,8 @@ function PageHeader({
         props.onBack = () => history.push({
             pathname: '/user',
             state: {
-                pageSize, 
-                page,
+                activePageSize, 
+                activePage,
                 stateSort,
                 stateSearch,
             }

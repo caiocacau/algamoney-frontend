@@ -1,0 +1,48 @@
+.pageItem {
+    margin-right: 8px !important;
+}
+
+.pageItemNone {
+    display: none;
+}
+
+.pageLink {
+    color: #000000d9;
+}
+
+.pageLink:hover {
+    color: #008dff;
+    border-color : #008dff;
+    border-width: 1px;
+    background-color: white !important;
+}
+
+.pageLinkPaginaAtual {
+    color: #008dff !important;
+    border-color : #008dff !important;
+}
+
+.caracteres {
+    text-align: center;
+    color: #000000d9;
+    font-weight: 200;
+    background-color: transparent !important;
+}
+
+.caracteres:hover {
+    color: #008dff;
+    border-color : #008dff;
+    border-width: 1px;
+}
+
+.pontinhos {
+    color: silver;
+    font-size: large;
+    font-weight: bold;
+}
+
+.antSelectSelector {
+    height: 38px;
+    width: 120px;
+    margin-left: 20px;
+}

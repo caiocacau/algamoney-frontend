@@ -10,7 +10,7 @@ import permissaoService from "../services/permissao.service";
 import { history } from "../helpers/history";
 // import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 
-function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) {
+function FormUserEdit({ acao, codigo, activePageSize, activePage, stateSort, stateSearch }) {
 
   // const location = useLocation();
 
@@ -18,6 +18,8 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
 
   // console.log('acao 1: ', acao);
   // console.log('stateSearch 1: ', stateSearch);
+
+  const strongPasswordRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])");
 
   const [form] = Form.useForm();
 
@@ -147,7 +149,7 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
         await userService.delete(codigo);
       }
 
-      history.push('/user', { pageSize, page, stateSort, stateSearch, sortByState: 'N' });
+      history.push('/user', { activePageSize, activePage, stateSort, stateSearch, sortByState: 'N' });
       toast.success(`Registro ${acao === 'insert' ? 'inserido' : (acao === 'update' ? 'alterado' : 'excluído')} com sucesso!`)
 
     } catch (err) {
@@ -155,7 +157,7 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
       toast.error(err.response.data[0]?.mensagemUsuario ? err.response.data[0].mensagemUsuario : `Erro ao ${acao === 'insert' ? 'inserir' : (acao === 'update' ? 'alterar' : 'excluir')} o registro!`);
     }
 
-  }, [checkedList, updateStateForm, codigo, acao, pageSize, page, stateSearch, stateSort]);
+  }, [checkedList, updateStateForm, codigo, acao, activePageSize, activePage, stateSearch, stateSort]);
 
   const acaoHasFeedback = ['view', 'delete'].indexOf(acao) < 0;
   const acaoDisabled = ['view', 'delete'].indexOf(acao) > 0;
@@ -175,14 +177,13 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
       {/* <BreadCrumb breadcrumb={routes} /> */}
 
       <PageHeader 
-        className="ant-page-header-heading-form"
         title="Usuários"
         subtitle={`- ${acao === 'insert' ? 'Inclusão' : (acao === 'update' ? 'Alteração' : (acao === 'delete' ? 'Exclusão' : 'Detalhamento'))}`}
         // buttonsPageHeader={buttonsPageHeader}
         // Ativar o back history
         activeBackHistory
-        pageSize={pageSize}
-        page={page}
+        activePageSize={activePageSize}
+        activePage={activePage}
         stateSort={stateSort}
         stateSearch={stateSearch}
       />
@@ -242,9 +243,9 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
                     { min: 5 },
                     {
                       validator: (_, value) =>
-                        value && value.includes("A")
+                        value && value.includes("A") && value.match(strongPasswordRegex)
                           ? Promise.resolve()
-                          : Promise.reject("Senha informada deve conter o caractere 'A'")
+                          : Promise.reject("Senha informada deve conter o caractere 'A' e deve ser forte(caracter especial, letras minúsculas, maiúsculas e números)")
                     }
                   ]}
                   hasFeedback={acaoHasFeedback}
@@ -310,7 +311,7 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
               <CheckboxGroup style={{ width: '100%' }} value={checkedList?.map(checked => checked.codigo)} onChange={onChange} disabled={acaoDisabled} >
                 <Row>
                   {options?.map((item) =>
-                    <Col lg={{ span: 12 }} md={{ span: 16 }} sm={{ span: 24 }} xs={{ span: 24 }}>
+                    <Col key={item.codigo} lg={{ span: 12 }} md={{ span: 16 }} sm={{ span: 24 }} xs={{ span: 24 }}>
                       {/* <Checkbox value={item.value}>{item.label}</Checkbox> */}
                       <Checkbox value={item.codigo}>{item.descricao}</Checkbox>
                     </Col>
@@ -331,7 +332,7 @@ function FormUserEdit({ acao, codigo, pageSize, page, stateSort, stateSearch }) 
                   type="primary"
                   size="large"
                   style={{ borderRadius: '6px', marginLeft: '5px' }}
-                  onClick={() => history.push('/user', { pageSize, page, stateSort, stateSearch, sortByState: 'N' })}
+                  onClick={() => history.push('/user', { activePageSize, activePage, stateSort, stateSearch, sortByState: 'N' })}
                 >
                   Cancelar
                 </Button>
